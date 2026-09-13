@@ -6,6 +6,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type Color struct {
+	Eng string `json: "eng" binding:"required"`
+	Rus string `json: "rus" binding:"required"`
+}
+
 var mapa map[string]string = map[string]string{
 	"yellow": "желтый",
 	"green":  "зеленый",
@@ -13,7 +18,6 @@ var mapa map[string]string = map[string]string{
 }
 
 func main() {
-	// Create a Gin router with default middleware (logger and recovery)
 	r := gin.Default()
 
 	r.GET("/color/:color-name", func(c *gin.Context) {
@@ -29,15 +33,22 @@ func main() {
 			})
 		}
 	})
-	// Define a simple GET endpoint
-	r.GET("/ping", func(c *gin.Context) {
-		// Return JSON response
-		c.JSON(http.StatusOK, gin.H{
-			"message": "pong",
+
+	r.DELETE("/color/:color_name", func(c *gin.Context) {
+		color_name := c.Param("color_name")
+		delete(mapa, color_name)
+		c.JSON(200, gin.H{
+			"message": "Seccess delete!",
 		})
 	})
 
-	// Start server on port 8080 (default)
-	// Server will listen on 0.0.0.0:8080 (localhost:8080 on Windows)
-	r.Run()
+	r.POST("/color", func(c *gin.Context) {
+		var color Color
+		c.BindJSON(&color)
+		mapa[color.Eng] = color.Rus
+		c.JSON(201, gin.H{
+			"message": "Succesfull create!",
+		})
+	})
+	r.Run(":8080")
 }
